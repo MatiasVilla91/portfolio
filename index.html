@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MSV — Fullstack & AI Engineer</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=swap');
+
+    :root {
+      --black:   #050805;
+      --green:   #00ff41;
+      --green2:  #00cc33;
+      --green3:  #008f20;
+      --dim:     #1a3a1a;
+      --dimmer:  #0d1a0d;
+      --amber:   #ffb000;
+      --red:     #ff3333;
+      --white:   #e8f5e8;
+      --scan:    rgba(0,255,65,0.03);
+      --font:    'JetBrains Mono', 'Courier New', monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--black);
+      color: var(--green);
+      font-family: var(--font);
+      font-size: 14px;
+      line-height: 1.7;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    /* ── SCANLINES ── */
+    body::after {
+      content: '';
+      position: fixed; inset: 0; z-index: 9999;
+      pointer-events: none;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        var(--scan) 2px,
+        var(--scan) 4px
+      );
+    }
+
+    /* ── CRT FLICKER ── */
+    @keyframes flicker {
+      0%,100%{opacity:1} 92%{opacity:1} 93%{opacity:.85} 94%{opacity:1} 96%{opacity:.9} 97%{opacity:1}
+    }
+    body { animation: flicker 8s infinite; }
+
+    /* ── CURSOR BLINK ── */
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+    .cursor { display: inline-block; width: .6em; height: 1.1em;
+      background: var(--green); vertical-align: text-bottom;
+      animation: blink 1s step-end infinite; margin-left: 2px; }
+    .cursor-line::after {
+      content: '█'; color: var(--green);
+      animation: blink 1s step-end infinite;
+    }
+
+    /* ── TYPING ANIMATION ── */
+    @keyframes typing {
+      from { width: 0; }
+      to   { width: 100%; }
+    }
+
+    /* ── SCROLLBAR ── */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--black); }
+    ::-webkit-scrollbar-thumb { background: var(--green3); border-radius: 0; }
+
+    /* ── NAV / TOP BAR ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: .6rem 2rem;
+      background: var(--black);
+      border-bottom: 1px solid var(--green3);
+    }
+    .nav-left { display: flex; align-items: center; gap: 1rem; }
+    .nav-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .dot-r { background: var(--red); }
+    .dot-a { background: var(--amber); }
+    .dot-g { background: var(--green); }
+    .nav-title { color: var(--green2); font-size: .85rem; }
+    .nav-links { display: flex; gap: 0; list-style: none; }
+    .nav-links li a {
+      color: var(--green3); text-decoration: none; font-size: .82rem;
+      padding: .4rem 1rem; display: block;
+      border-left: 1px solid var(--green3);
+      transition: color .15s, background .15s;
+    }
+    .nav-links li:last-child a { border-right: 1px solid var(--green3); }
+    .nav-links li a:hover { color: var(--green); background: var(--dimmer); }
+
+    /* ── WRAPPER ── */
+    .terminal-wrap {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 6rem 2rem 4rem;
+    }
+
+    /* ── PROMPT LINE ── */
+    .prompt-line {
+      display: flex; align-items: baseline; gap: .5rem;
+      margin-bottom: .2rem;
+    }
+    .prompt-user { color: var(--green); font-weight: 700; }
+    .prompt-at   { color: var(--green3); }
+    .prompt-host { color: var(--green2); font-weight: 700; }
+    .prompt-path { color: var(--amber); }
+    .prompt-sym  { color: var(--green); }
+    .prompt-cmd  { color: var(--white); }
+
+    /* ── OUTPUT BLOCKS ── */
+    .output { margin-bottom: 2.5rem; padding-left: 0; }
+    .output-indent { padding-left: 1.5rem; }
+
+    /* ── HERO ── */
+    .hero { margin-bottom: 4rem; }
+    .ascii-logo {
+      color: var(--green);
+      font-size: clamp(.5rem, 1.4vw, .9rem);
+      line-height: 1.2;
+      margin-bottom: 1.5rem;
+      text-shadow: 0 0 8px rgba(0,255,65,.5);
+      white-space: pre;
+    }
+    .hero-tagline {
+      font-size: 1rem; color: var(--white); margin-bottom: .5rem;
+    }
+    .hero-tagline span { color: var(--green); font-weight: 700; }
+    .hero-sub { color: var(--green3); font-size: .88rem; max-width: 620px; margin-bottom: 1.5rem; }
+
+    .status-line {
+      display: inline-flex; align-items: center; gap: .6rem;
+      border: 1px solid var(--green3);
+      padding: .3rem .9rem; font-size: .8rem; color: var(--green2);
+      margin-bottom: 2rem;
+    }
+    .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green);
+      box-shadow: 0 0 6px var(--green); animation: blink 2s infinite; }
+
+    /* ── SECTION HEADER ── */
+    .sec-header {
+      border-bottom: 1px solid var(--green3);
+      padding-bottom: .4rem; margin-bottom: 1.5rem;
+      display: flex; align-items: center; gap: 1rem;
+    }
+    .sec-title { color: var(--green); font-size: 1rem; font-weight: 700; text-transform: uppercase; letter-spacing: .15em; }
+    .sec-line { flex: 1; height: 1px; background: var(--green3); }
+
+    /* ── PROJECT CARDS ── */
+    .project {
+      border: 1px solid var(--green3);
+      padding: 1.4rem;
+      margin-bottom: 1.2rem;
+      position: relative;
+      transition: border-color .2s, background .2s;
+      cursor: default;
+    }
+    .project::before {
+      content: '';
+      position: absolute; top: -1px; left: -1px; bottom: -1px;
+      width: 3px; background: var(--green3);
+      transition: background .2s, box-shadow .2s;
+    }
+    .project:hover {
+      border-color: var(--green2);
+      background: var(--dimmer);
+    }
+    .project:hover::before {
+      background: var(--green);
+      box-shadow: 0 0 10px var(--green);
+    }
+    .proj-header {
+      display: flex; align-items: baseline; gap: 1rem;
+      margin-bottom: .6rem; flex-wrap: wrap;
+    }
+    .proj-id { color: var(--green3); font-size: .78rem; }
+    .proj-name { color: var(--white); font-size: 1rem; font-weight: 700; }
+    .proj-status {
+      font-size: .72rem; padding: .15rem .6rem;
+      border: 1px solid var(--green3); color: var(--green2);
+      text-transform: uppercase; letter-spacing: .08em;
+      margin-left: auto;
+    }
+    .proj-status.live { border-color: var(--green); color: var(--green); }
+    .proj-desc { color: var(--green3); font-size: .86rem; margin-bottom: .9rem; line-height: 1.6; }
+    .proj-tags { display: flex; flex-wrap: wrap; gap: .4rem; margin-bottom: .9rem; }
+    .tag {
+      font-size: .73rem; padding: .15rem .55rem;
+      background: var(--dimmer); border: 1px solid var(--green3);
+      color: var(--green2);
+    }
+    .tag.hl { border-color: var(--green2); color: var(--green); }
+    .proj-link { color: var(--amber); text-decoration: none; font-size: .82rem; }
+    .proj-link:hover { text-decoration: underline; text-shadow: 0 0 6px var(--amber); }
+    .proj-link::before { content: '→ '; }
+
+    /* ── SKILLS TABLE ── */
+    .skill-table { width: 100%; border-collapse: collapse; margin-bottom: 1rem; }
+    .skill-table tr { border-bottom: 1px solid var(--dimmer); }
+    .skill-table tr:last-child { border-bottom: none; }
+    .skill-table td { padding: .5rem .3rem; font-size: .85rem; vertical-align: top; }
+    .skill-table .sk-cat { color: var(--green2); width: 160px; font-weight: 700; white-space: nowrap; }
+    .skill-table .sk-sep { color: var(--green3); width: 20px; }
+    .skill-table .sk-val { color: var(--white); }
+
+    /* ── ABOUT ── */
+    .about-text { color: var(--green3); font-size: .88rem; line-height: 1.9; }
+    .about-text .hl { color: var(--white); }
+    .about-text .hl-g { color: var(--green); }
+
+    /* ── CONTACT ── */
+    .contact-block { border: 1px solid var(--green3); padding: 1.4rem; }
+    .contact-line { display: flex; align-items: center; gap: .8rem;
+      padding: .4rem 0; border-bottom: 1px solid var(--dimmer); }
+    .contact-line:last-child { border-bottom: none; }
+    .contact-key { color: var(--green2); width: 80px; font-size: .85rem; }
+    .contact-sep { color: var(--green3); }
+    .contact-val { color: var(--white); text-decoration: none; font-size: .85rem; }
+    .contact-val:hover { color: var(--green); text-shadow: 0 0 6px var(--green); }
+
+    /* ── COMMAND PROMPT INPUT (decorativo) ── */
+    .fake-input {
+      display: flex; align-items: center; gap: .5rem; margin-top: 3rem;
+      padding: .5rem .8rem; border: 1px solid var(--green3);
+      font-size: .85rem; color: var(--green3);
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      text-align: center; font-size: .78rem;
+      color: var(--green3); padding: 1.5rem;
+      border-top: 1px solid var(--green3);
+    }
+
+    @media (max-width: 640px) {
+      .terminal-wrap { padding: 5rem 1rem 3rem; }
+      .nav-links { display: none; }
+      .ascii-logo { font-size: .42rem; }
+      .skill-table .sk-cat { width: 100px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV BAR -->
+  <nav>
+    <div class="nav-left">
+      <span class="nav-dot dot-r"></span>
+      <span class="nav-dot dot-a"></span>
+      <span class="nav-dot dot-g"></span>
+      <span class="nav-title">msv@portfolio:~$</span>
+    </div>
+    <ul class="nav-links">
+      <li><a href="#proyectos">/proyectos</a></li>
+      <li><a href="#skills">/skills</a></li>
+      <li><a href="#sobre-mi">/about</a></li>
+      <li><a href="#contacto">/contacto</a></li>
+    </ul>
+  </nav>
+
+  <div class="terminal-wrap">
+
+    <!-- ── HERO ── -->
+    <div class="hero" id="top">
+
+      <div class="prompt-line">
+        <span class="prompt-user">matias</span><span class="prompt-at">@</span><span class="prompt-host">devbox</span>
+        <span class="prompt-path">~/portfolio</span>
+        <span class="prompt-sym">$</span>
+        <span class="prompt-cmd">whoami</span>
+      </div>
+
+      <div class="output">
+        <pre class="ascii-logo">
+ ███╗   ███╗███████╗██╗   ██╗
+ ████╗ ████║██╔════╝██║   ██║
+ ██╔████╔██║███████╗██║   ██║
+ ██║╚██╔╝██║╚════██║╚██╗ ██╔╝
+ ██║ ╚═╝ ██║███████║ ╚████╔╝
+ ╚═╝     ╚═╝╚══════╝  ╚═══╝</pre>
+
+        <div class="status-line">
+          <span class="status-dot"></span>
+          DISPONIBLE PARA OPORTUNIDADES · FULLSTACK + AI ENGINEER
+        </div>
+
+        <p class="hero-tagline">
+          <span>Matías SV</span> — Desarrollador Fullstack &amp; AI Engineer
+        </p>
+        <p class="hero-sub">
+          Construyo productos web de principio a fin e integro modelos de IA para resolver
+          problemas reales. Tengo 4 aplicaciones en producción que mezclan LLMs, machine
+          learning clásico y datos en tiempo real.
+        </p>
+      </div>
+
+      <div class="prompt-line">
+        <span class="prompt-user">matias</span><span class="prompt-at">@</span><span class="prompt-host">devbox</span>
+        <span class="prompt-path">~/portfolio</span>
+        <span class="prompt-sym">$</span>
+        <span class="prompt-cmd">cat stack.txt</span>
+      </div>
+      <div class="output output-indent">
+        <span style="color:var(--green2)">Python</span> · <span style="color:var(--green2)">Node.js</span> · <span style="color:var(--green2)">React</span> · <span style="color:var(--green2)">Next.js</span> · <span style="color:var(--green2)">FastAPI</span> · <span style="color:var(--green2)">Claude API</span> · <span style="color:var(--green2)">scikit-learn</span> · <span style="color:var(--green2)">librosa</span> · <span style="color:var(--green2)">PostgreSQL</span> · <span style="color:var(--green2)">Vercel</span>
+      </div>
+    </div>
+
+    <!-- ── PROYECTOS ── -->
+    <section id="proyectos">
+      <div class="prompt-line">
+        <span class="prompt-user">matias</span><span class="prompt-at">@</span><span class="prompt-host">devbox</span>
+        <span class="prompt-path">~/portfolio</span>
+        <span class="prompt-sym">$</span>
+        <span class="prompt-cmd">ls -la proyectos/</span>
+      </div>
+      <div class="output">
+        <div class="sec-header">
+          <span class="sec-title">// proyectos</span>
+          <span class="sec-line"></span>
+          <span style="color:var(--green3);font-size:.78rem">4 encontrados</span>
+        </div>
+
+        <!-- Dictum -->
+        <div class="project">
+          <div class="proj-header">
+            <span class="proj-id">[001]</span>
+            <span class="proj-name">Dictum IA Argentina</span>
+            <span class="proj-status live">● LIVE</span>
+          </div>
+          <p class="proj-desc">
+            SaaS legal fullstack con corpus propio de +23.000 fragmentos indexados en Qdrant.
+            El corpus cubre la Constitución Nacional, Código Civil y Comercial completo
+            (~2.600 arts.), Código Penal, LCT, 15+ leyes laborales, 127 fallos de la CSJN,
+            plenarios de la CNAT y CNCiv, 3 CCT completos (comercio, construcción, gastronomía)
+            y ~7.920 fragmentos de consultas reales de abogados. Datos vivos actualizados
+            (SMVM, RIPTE, UVA, tasa BNA). Backend Node.js + Qdrant, frontend React,
+            autenticación, historial de consultas, blog legal, calculadora de indemnizaciones
+            y generación de contratos con IA.
+          </p>
+          <div class="proj-tags">
+            <span class="tag hl">RAG · Qdrant</span>
+            <span class="tag hl">+23.000 fragmentos</span>
+            <span class="tag hl">LLM</span>
+            <span class="tag">Node.js · React</span>
+            <span class="tag">LegalTech SaaS</span>
+            <span class="tag">Auth · Planes</span>
+          </div>
+          <a href="https://dictum-arg.site" target="_blank" class="proj-link">dictum-arg.site</a>
+        </div>
+
+        <!-- Temblor -->
+        <div class="project">
+          <div class="proj-header">
+            <span class="proj-id">[002]</span>
+            <span class="proj-name">Temblor — Sismógrafo Global 3D</span>
+            <span class="proj-status live">● LIVE</span>
+          </div>
+          <p class="proj-desc">
+            Visualizador sísmico global en tiempo real construido sobre CesiumJS: globo 3D
+            con imágenes satelitales reales, renderizado WebGL de alto rendimiento y soporte
+            nativo de coordenadas geográficas. Consume hasta 5.000 eventos del catálogo USGS
+            y los posiciona sobre el globo en tiempo real. Vientos vectoriales en tiempo real
+            sobre 77 puntos de grilla con datos de Open-Meteo, proyectados sobre el plano tangente
+            de la esfera. Alertas push configurables por magnitud. Modelo de riesgo sísmico dual:
+            implementación ETAS en el browser (b-value Aki 1965, ley Omori-Utsu, Gutenberg-Richter
+            + Poisson) y XGBoost entrenado en Python con 2 años de catálogo, 10 features sísmicas
+            y validación cruzada de 5 pliegues (AUC ~0.84–0.87). Todo sin backend — funciona
+            100% en el navegador.
+          </p>
+          <div class="proj-tags">
+            <span class="tag hl">CesiumJS · WebGL</span>
+            <span class="tag hl">XGBoost · ETAS</span>
+            <span class="tag hl">Real-time · USGS</span>
+            <span class="tag">Open-Meteo</span>
+            <span class="tag">Seismología cuantitativa</span>
+            <span class="tag">Sin backend</span>
+          </div>
+          <a href="https://temblor.online" target="_blank" class="proj-link">temblor.online</a>
+        </div>
+
+        <!-- VoxCanis -->
+        <div class="project">
+          <div class="proj-header">
+            <span class="proj-id">[003]</span>
+            <span class="proj-name">VoxCanis — Análisis de Vocalizaciones Caninas</span>
+            <span class="proj-status live">● LIVE</span>
+          </div>
+          <p class="proj-desc">
+            Pipeline de audio DSP + ML que extrae 67 features acústicas (pYIN,
+            13 MFCCs + deltas, HPSS, centroide espectral, onset detection) con librosa,
+            clasifica la vocalización entre 9 clases usando Random Forest entrenado
+            con supervisión débil sobre Freesound, y llama a Claude Opus vía streaming
+            SSE para producir una interpretación anclada en literatura peer-reviewed.
+          </p>
+          <div class="proj-tags">
+            <span class="tag hl">Machine Learning</span>
+            <span class="tag hl">Claude API</span>
+            <span class="tag hl">Audio DSP</span>
+            <span class="tag">librosa / pYIN</span>
+            <span class="tag">Random Forest</span>
+            <span class="tag">Streaming SSE</span>
+            <span class="tag">Vercel</span>
+          </div>
+          <a href="https://talks-animals.vercel.app" target="_blank" class="proj-link">talks-animals.vercel.app</a>
+        </div>
+
+        <!-- Peronia -->
+        <div class="project">
+          <div class="proj-header">
+            <span class="proj-id">[004]</span>
+            <span class="proj-name">Peronia — Agente Conversacional Histórico</span>
+            <span class="proj-status live">● LIVE</span>
+          </div>
+          <p class="proj-desc">
+            LLM con RAG sobre un corpus histórico curado: discursos, documentos y
+            entrevistas de Juan Domingo Perón. El agente mantiene coherencia de
+            personaje, cita fuentes primarias y responde en contexto histórico.
+            Ejercicio de prompt engineering, curación de fuentes y construcción
+            de pipelines de recuperación semántica sobre documentos de época.
+          </p>
+          <div class="proj-tags">
+            <span class="tag hl">RAG</span>
+            <span class="tag hl">LLM</span>
+            <span class="tag">Corpus histórico</span>
+            <span class="tag">Prompt engineering</span>
+            <span class="tag">Fullstack</span>
+          </div>
+          <a href="https://peronia.site" target="_blank" class="proj-link">peronia.site</a>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ── SKILLS ── -->
+    <section id="skills">
+      <div class="prompt-line">
+        <span class="prompt-user">matias</span><span class="prompt-at">@</span><span class="prompt-host">devbox</span>
+        <span class="prompt-path">~/portfolio</span>
+        <span class="prompt-sym">$</span>
+        <span class="prompt-cmd">cat skills.json</span>
+      </div>
+      <div class="output">
+        <div class="sec-header">
+          <span class="sec-title">// skills</span>
+          <span class="sec-line"></span>
+        </div>
+
+        <table class="skill-table">
+          <tr>
+            <td class="sk-cat">Frontend</td>
+            <td class="sk-sep">::</td>
+            <td class="sk-val">React, Next.js, HTML/CSS/JS, animaciones, diseño responsive, WebGL</td>
+          </tr>
+          <tr>
+            <td class="sk-cat">Backend</td>
+            <td class="sk-sep">::</td>
+            <td class="sk-val">Python, FastAPI, Node.js, Express, APIs REST, Streaming SSE/WS</td>
+          </tr>
+          <tr>
+            <td class="sk-cat">IA Generativa</td>
+            <td class="sk-sep">::</td>
+            <td class="sk-val">Claude API, OpenAI API, prompt engineering, RAG, contexto dinámico</td>
+          </tr>
+          <tr>
+            <td class="sk-cat">Machine Learning</td>
+            <td class="sk-sep">::</td>
+            <td class="sk-val">scikit-learn, Random Forest, feature engineering, supervisión débil, Audio DSP (librosa)</td>
+          </tr>
+          <tr>
+            <td class="sk-cat">Bases de datos</td>
+            <td class="sk-sep">::</td>
+            <td class="sk-val">PostgreSQL, SQLite, diseño de esquemas</td>
+          </tr>
+          <tr>
+            <td class="sk-cat">Infra / Deploy</td>
+            <td class="sk-sep">::</td>
+            <td class="sk-val">Vercel, Railway, VPS, Docker, SSL, dominios, CI básico</td>
+          </tr>
+          <tr>
+            <td class="sk-cat">Herramientas</td>
+            <td class="sk-sep">::</td>
+            <td class="sk-val">Git, GitHub, integración de APIs externas (USGS, Open-Meteo, Freesound)</td>
+          </tr>
+        </table>
+      </div>
+    </section>
+
+    <!-- ── SOBRE MÍ ── -->
+    <section id="sobre-mi">
+      <div class="prompt-line">
+        <span class="prompt-user">matias</span><span class="prompt-at">@</span><span class="prompt-host">devbox</span>
+        <span class="prompt-path">~/portfolio</span>
+        <span class="prompt-sym">$</span>
+        <span class="prompt-cmd">cat about.txt</span>
+      </div>
+      <div class="output">
+        <div class="sec-header">
+          <span class="sec-title">// about</span>
+          <span class="sec-line"></span>
+        </div>
+        <p class="about-text">
+          Soy <span class="hl-g">Matías</span>, desarrollador fullstack con foco en
+          <span class="hl">inteligencia artificial aplicada</span>. Tengo
+          <span class="hl">4 proyectos en producción</span> en industrias distintas
+          (LegalTech, datos sísmicos, bioacústica) que combinan LLMs, ML clásico
+          y datos en tiempo real.<br><br>
+          Busco equipos donde la IA tenga impacto concreto en el producto. Aporto
+          desde el día uno: diseño la arquitectura, construyo el backend, integro los
+          modelos y hago el deploy.<br><br>
+          <span class="hl-g">Ubicación:</span> Argentina · disponible para trabajo remoto
+        </p>
+      </div>
+    </section>
+
+    <!-- ── CONTACTO ── -->
+    <section id="contacto">
+      <div class="prompt-line">
+        <span class="prompt-user">matias</span><span class="prompt-at">@</span><span class="prompt-host">devbox</span>
+        <span class="prompt-path">~/portfolio</span>
+        <span class="prompt-sym">$</span>
+        <span class="prompt-cmd">cat contact.json</span>
+      </div>
+      <div class="output">
+        <div class="sec-header">
+          <span class="sec-title">// contacto</span>
+          <span class="sec-line"></span>
+        </div>
+        <div class="contact-block">
+          <div class="contact-line">
+            <span class="contact-key">email</span>
+            <span class="contact-sep">=</span>
+            <a href="mailto:matias.sv@gmail.com" class="contact-val">matias.sv@gmail.com</a>
+          </div>
+          <div class="contact-line">
+            <span class="contact-key">github</span>
+            <span class="contact-sep">=</span>
+            <a href="https://github.com/MatiasVilla91/" target="_blank" class="contact-val">github.com/MatiasVilla91</a>
+          </div>
+          <div class="contact-line">
+            <span class="contact-key">linkedin</span>
+            <span class="contact-sep">=</span>
+            <a href="https://www.linkedin.com/in/matias-villa/" target="_blank" class="contact-val">linkedin.com/in/matias-villa</a>
+          </div>
+          <div class="contact-line">
+            <span class="contact-key">ubicación</span>
+            <span class="contact-sep">=</span>
+            <span class="contact-val">Argentina · remoto</span>
+          </div>
+          <div class="contact-line">
+            <span class="contact-key">status</span>
+            <span class="contact-sep">=</span>
+            <span style="color:var(--green)">● disponible</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PROMPT FINAL -->
+    <div class="fake-input">
+      <span class="prompt-user">matias</span><span class="prompt-at">@</span><span class="prompt-host">devbox</span>
+      <span class="prompt-path">~/portfolio</span>
+      <span class="prompt-sym">$</span>
+      <span class="cursor"></span>
+    </div>
+
+  </div><!-- /terminal-wrap -->
+
+  <footer>
+    <span style="color:var(--green3)">MSV</span> · Fullstack Developer &amp; AI Engineer · Argentina · 2025
+    &nbsp;|&nbsp; Construido con HTML + CSS puro
+  </footer>
+
+</body>
+</html>
