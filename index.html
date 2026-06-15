@@ -299,8 +299,8 @@
         </p>
         <p class="hero-sub">
           Construyo productos web de principio a fin e integro modelos de IA para resolver
-          problemas reales. Tengo 4 aplicaciones en producción que mezclan LLMs, machine
-          learning clásico y datos en tiempo real.
+          problemas reales. Tengo 5 aplicaciones en producción que mezclan LLMs, machine
+          learning clásico, datos satelitales y en tiempo real.
         </p>
       </div>
 
@@ -327,13 +327,47 @@
         <div class="sec-header">
           <span class="sec-title">// proyectos</span>
           <span class="sec-line"></span>
-          <span style="color:var(--green3);font-size:.78rem">4 encontrados</span>
+          <span style="color:var(--green3);font-size:.78rem">5 encontrados</span>
+        </div>
+
+        <!-- Incendios Córdoba -->
+        <div class="project">
+          <div class="proj-header">
+            <span class="proj-id">[001]</span>
+            <span class="proj-name">Incendios Córdoba — Mapa 3D + IA</span>
+            <span class="proj-status live">● LIVE</span>
+          </div>
+          <p class="proj-desc">
+            Mapa interactivo 3D (CesiumJS) que cruza datos satelitales con información
+            territorial para revelar patrones entre incendios y cambios de uso del suelo
+            sobre bosque nativo protegido en Córdoba (2018–2025). Superpone cicatrices de
+            incendio derivadas de Sentinel-2 vía Google
+            Earth Engine (índice dNBR clasificado por severidad) con focos activos NASA FIRMS
+            en tiempo casi real, vientos de Open-Meteo, bosque nativo OTBN (IDECOR), loteos
+            municipales, desarrollos OSM y recurrencia histórica. Un score compuesto
+            rankea las 20 cicatrices con más señales de alerta (bosque nativo quemado + loteo
+            posterior al incendio + recurrencia + desarrollos de alto valor). Cada cicatriz se analiza
+            con Claude vía un Cloudflare Worker que protege la API key server-side. Pipeline
+            de datos en Python + GEE, exportación a Excel/PDF y auto-actualización por GitHub
+            Action. Corre 100% estático en GitHub Pages.
+          </p>
+          <div class="proj-tags">
+            <span class="tag hl">CesiumJS · WebGL 3D</span>
+            <span class="tag hl">Google Earth Engine</span>
+            <span class="tag hl">Claude API</span>
+            <span class="tag hl">Geoespacial · dNBR</span>
+            <span class="tag">NASA FIRMS · Sentinel-2</span>
+            <span class="tag">Python · Pipeline</span>
+            <span class="tag">Cloudflare Worker</span>
+            <span class="tag">GitHub Pages</span>
+          </div>
+          <a href="https://matiasvilla91.github.io/incendios/" target="_blank" class="proj-link">matiasvilla91.github.io/incendios</a>
         </div>
 
         <!-- Dictum -->
         <div class="project">
           <div class="proj-header">
-            <span class="proj-id">[001]</span>
+            <span class="proj-id">[002]</span>
             <span class="proj-name">Dictum IA Argentina</span>
             <span class="proj-status live">● LIVE</span>
           </div>
@@ -361,7 +395,7 @@
         <!-- Temblor -->
         <div class="project">
           <div class="proj-header">
-            <span class="proj-id">[002]</span>
+            <span class="proj-id">[003]</span>
             <span class="proj-name">Temblor — Sismógrafo Global 3D</span>
             <span class="proj-status live">● LIVE</span>
           </div>
@@ -391,7 +425,7 @@
         <!-- VoxCanis -->
         <div class="project">
           <div class="proj-header">
-            <span class="proj-id">[003]</span>
+            <span class="proj-id">[004]</span>
             <span class="proj-name">VoxCanis — Análisis de Vocalizaciones Caninas</span>
             <span class="proj-status live">● LIVE</span>
           </div>
@@ -417,7 +451,7 @@
         <!-- Peronia -->
         <div class="project">
           <div class="proj-header">
-            <span class="proj-id">[004]</span>
+            <span class="proj-id">[005]</span>
             <span class="proj-name">Peronia — Agente Conversacional Histórico</span>
             <span class="proj-status live">● LIVE</span>
           </div>
@@ -511,9 +545,9 @@
         <p class="about-text">
           Soy <span class="hl-g">Matías</span>, desarrollador fullstack con foco en
           <span class="hl">inteligencia artificial aplicada</span>. Tengo
-          <span class="hl">4 proyectos en producción</span> en industrias distintas
-          (LegalTech, datos sísmicos, bioacústica) que combinan LLMs, ML clásico
-          y datos en tiempo real.<br><br>
+          <span class="hl">5 proyectos en producción</span> en industrias distintas
+          (LegalTech, datos sísmicos, geoespacial/ambiental, bioacústica) que combinan
+          LLMs, ML clásico y datos en tiempo real.<br><br>
           Busco equipos donde la IA tenga impacto concreto en el producto. Aporto
           desde el día uno: diseño la arquitectura, construyo el backend, integro los
           modelos y hago el deploy.<br><br>
