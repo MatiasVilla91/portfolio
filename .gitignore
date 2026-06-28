@@ -1,2 +1,8 @@
 *.pdf
 *.md
+/React-Entrevista/
+demo-calibracion-rf.py
+demo-retrieval-hibrido.py
+grafico-calibracion.py
+mapa-proyectos.html
+reliability-diagram.png
